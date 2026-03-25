@@ -2,7 +2,8 @@
   "name": "devstore",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "type": "commonjs",
+  "main": "dist/index.js",
   "bin": {
     "devstore": "./dist/index.js"
   },
@@ -23,6 +24,7 @@
     "ora": "^9.3.0"
   },
   "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
     "@types/node": "^25.5.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2"

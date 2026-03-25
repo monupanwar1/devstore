@@ -1,16 +1,12 @@
-#!/user/bin/env node
+#!/usr/bin/env node
 
 import { Command } from 'commander';
+import { registerAddCommand } from './command/add-command';
 
 const program = new Command();
 
 program.name('version').description('Devops automation CLI').version('1.0.0');
 
-// test
+registerAddCommand(program);
 
-program
-  .command('hello')
-  .description('test-command')
-  .action(() => console.log('Hello from Devstore cli'));
-
-program.parse();
+program.parse(process.argv);

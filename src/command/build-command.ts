@@ -7,8 +7,9 @@ export function registerBuildCommand(program: Command) {
   program
     .command('build')
     .description('Build docker image')
+    .argument('[context]', 'Build context (default: .)', '.')
     .option('-t, --tag <tag>', 'Custom image tag')
-    .action(async (option) => {
+    .action(async (context, option) => {
       try {
         const project = getProjectInfo();
 
@@ -19,9 +20,11 @@ export function registerBuildCommand(program: Command) {
 
         const imageName = option.tag || project.name;
 
-        logger.info(`Building Docker image:${imageName}`);  
+        logger.info(
+          `Building Docker image: ${imageName} (context: ${context})`,
+        );
 
-        await execa('docker', ['build', '-t', imageName, '.'], {
+        await execa('docker', ['build', '-t', imageName, context], {
           stdio: 'inherit',
         });
 

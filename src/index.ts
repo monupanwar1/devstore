@@ -3,6 +3,7 @@
 import { Command } from 'commander';
 import { registerAddCommand } from './command/add-command';
 import { registerBuildCommand } from './command/build-command';
+import { registerRunCommand } from './command/run-command';
 
 const program = new Command();
 
@@ -11,5 +12,7 @@ program.name('version').description('Devops automation CLI').version('1.0.0');
 registerAddCommand(program);
 
 registerBuildCommand(program);
+
+registerRunCommand(program);
 
 program.parse(process.argv);

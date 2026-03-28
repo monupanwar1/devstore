@@ -3,7 +3,11 @@
 import { Command } from 'commander';
 import { registerAddCommand } from './command/add-command';
 import { registerBuildCommand } from './command/build-command';
+import { registerCleanCommand } from './command/clean-command';
+import { registerLogsCommand } from './command/logs-command';
+import { registerPsCommand } from './command/ps-command';
 import { registerRunCommand } from './command/run-command';
+import { registerStopCommand } from './command/stop-command';
 
 const program = new Command();
 
@@ -14,5 +18,13 @@ registerAddCommand(program);
 registerBuildCommand(program);
 
 registerRunCommand(program);
+
+registerLogsCommand(program);
+
+registerStopCommand(program);
+
+registerPsCommand(program);
+
+registerCleanCommand(program);
 
 program.parse(process.argv);

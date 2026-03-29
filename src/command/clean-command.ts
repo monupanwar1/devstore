@@ -4,16 +4,32 @@ import { logger } from '../utils/logger-util';
 
 export function registerCleanCommand(program: Command) {
   program
-    .command('ps')
+    .command('clean')
     .description('Remove all containers')
-    .action(async (id) => {
+    .action(async () => {
       try {
-        await execa('docker', ['rm', '-f', '$(docker ps -aq)'], {
+        // 🔹 Step 1: get all container IDs
+        const { stdout } = await execa('docker', ['ps', '-aq']);
+
+        if (!stdout) {
+          logger.info('No containers to remove');
+          return;
+        }
+
+        const containerIds = stdout.split('\n').filter(Boolean);
+
+        // 🔹 Step 2: remove containers
+        await execa('docker', ['rm', '-f', ...containerIds], {
           stdio: 'inherit',
         });
+
         logger.success('All containers removed 🧹');
-      } catch (error) {
-        logger.error('Error cleaning container');
+      } catch (error: any) {
+        logger.error('Error cleaning containers');
+
+        if (error?.shortMessage) {
+          console.error(error.shortMessage);
+        }
       }
     });
 }

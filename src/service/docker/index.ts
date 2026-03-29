@@ -4,6 +4,9 @@ import { logger } from '../../utils/logger-util.js';
 import { generateDockerfile } from './dockerfile.js';
 import { generateDockerIgnore } from './dockerignore.js';
 
+import { exec } from 'child_process';
+import { execa } from 'execa';
+
 type ProjectInfo = {
   name: string;
   startScript: string;
@@ -57,4 +60,76 @@ export async function setupDocker(
   }
 
   logger.success(`Docker setup ready for project: ${project.name}`);
+}
+
+export function tagImage(
+  localImage: string,
+  remoteImage: string,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    exec(`docker tag ${localImage} ${remoteImage}`, (err) => {
+      if (err) return reject('Tag failed');
+      resolve();
+    });
+  });
+}
+
+export async function pushImage(remoteImage: string): Promise<void> {
+  try {
+    await execa('docker', ['push', remoteImage], {
+      stdio: 'inherit',
+    });
+  } catch (err) {
+    throw new Error('❌ Push failed');
+  }
+}
+
+export async function pullImage(image: string): Promise<void> {
+  await execa('docker', ['pull', image], {
+    stdio: 'inherit',
+  });
+}
+
+// run container
+export async function runContainer(
+  image: string,
+  options: {
+    port?: string;
+    detach?: boolean;
+    name?: string;
+  },
+): Promise<void> {
+  const args: string[] = ['run'];
+
+  if (options.detach) args.push('-d');
+
+  if (options.port) args.push('-p', options.port);
+
+  if (options.name) args.push('--name', options.name);
+
+  args.push(image);
+
+  await execa('docker', args, { stdio: 'inherit' });
+}
+
+export async function removeContainerIfExists(name: string): Promise<void> {
+  // Step 1: Check if container exists
+  const { stdout } = await execa('docker', [
+    'ps',
+    '-a',
+    '--filter',
+    `name=^/${name}$`,
+    '--format',
+    '{{.Names}}',
+  ]);
+
+  if (!stdout) {
+    // container does not exist → nothing to do
+    return;
+  }
+
+  // Step 2: Remove container
+  await execa('docker', ['rm', '-f', name], {
+    stdio: 'inherit',
+  });
 }

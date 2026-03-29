@@ -6,6 +6,7 @@ import { registerBuildCommand } from './command/build-command';
 import { registerCleanCommand } from './command/clean-command';
 import { registerLogsCommand } from './command/logs-command';
 import { registerPsCommand } from './command/ps-command';
+import { registerPushCommand } from './command/push-command';
 import { registerRunCommand } from './command/run-command';
 import { registerStopCommand } from './command/stop-command';
 
@@ -26,5 +27,7 @@ registerStopCommand(program);
 registerPsCommand(program);
 
 registerCleanCommand(program);
+
+registerPushCommand(program);
 
 program.parse(process.argv);

@@ -89,6 +89,11 @@ export async function pullImage(image: string): Promise<void> {
     stdio: 'inherit',
   });
 }
+export async function buildImage(image: string): Promise<void> {
+  await execa('docker', ['build', '-t', image, '.'], {
+    stdio: 'inherit',
+  });
+}
 
 // run container
 export async function runContainer(
@@ -132,4 +137,22 @@ export async function removeContainerIfExists(name: string): Promise<void> {
   await execa('docker', ['rm', '-f', name], {
     stdio: 'inherit',
   });
+}
+
+export async function imageExistsLocal(image: string): Promise<boolean> {
+  try {
+    await execa('docker', ['image', 'inspect', image]);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function imageExistsRemote(image: string): Promise<boolean> {
+  try {
+    await execa('docker', ['manifest', 'inspect', image]);
+    return true;
+  } catch {
+    return false;
+  }
 }

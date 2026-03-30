@@ -1,7 +1,7 @@
 {
   "name": "devstore",
   "version": "1.0.0",
-  "description": "",
+  "description": "🚀 Smart CLI to run, build and ship apps with Docker (local → remote → build)",
   "type": "commonjs",
   "main": "dist/index.js",
   "bin": {

@@ -1,40 +1,38 @@
 # 🚀 DevStore
 
-> A smart CLI to **run, build, and ship apps with Docker** — effortlessly.
+Run, build, and ship applications with Docker using a single command.
 
-DevStore simplifies Docker workflows by automatically handling image resolution, builds, and container execution with a clean developer experience.
+DevStore is a command-line tool designed to simplify Docker workflows for developers. It automatically resolves whether to use a local image, pull from a registry, or build from source—so you can focus on building, not managing containers.
 
 ---
 
-## ✨ Features
+## ✨ Key Capabilities
 
-* ⚡ **Smart Execution Pipeline**
+### ⚡ Automated Execution Pipeline
 
-  * Local → Remote → Build (automatic fallback)
-* 🔥 **Force Rebuild**
+* Uses local images when available
+* Falls back to remote registry (Docker Hub)
+* Builds images when none exist
 
-  * Rebuild images anytime using `--build`
-* 📦 **Optional Push**
+### 🔧 Flexible Build & Deployment
 
-  * Push images to Docker Hub with `--push`
-* 🧠 **Auto Port Detection**
+* Force rebuild with `--build`
+* Push images using `--push`
 
-  * Avoid conflicts with automatic port switching
-* 🧹 **Container Cleanup**
+### 🧠 Reliable Runtime Experience
 
-  * Removes old containers before running
-* 🛠️ **Project Initialization**
+* Automatically detects and resolves port conflicts
+* Cleans up existing containers before starting
 
-  * Generate Docker setup using `init docker`
-* 💡 **Developer-Friendly CLI**
+### 💡 Simple Developer Experience
 
-  * Clean logs and predictable behavior
+* Minimal commands
+* Predictable behavior
+* Clear terminal output
 
 ---
 
 ## 📦 Installation
-
-### Global install
 
 ```bash
 npm install -g devstore
@@ -42,37 +40,41 @@ npm install -g devstore
 
 ---
 
-## 🚀 Quick Start (Recommended for Beginners)
+## 🚀 Getting Started
+
+Initialize Docker configuration:
 
 ```bash
-# 1. Initialize Docker setup
-devstore init docker
+devstore init
+```
 
-# 2. Run your app
+Run your application:
+
+```bash
 devstore run my-app
 ```
 
-👉 DevStore will:
+DevStore will:
 
-* Create a Dockerfile
-* Build your app
-* Run it automatically
+* Generate a Dockerfile (if missing)
+* Build the image (if needed)
+* Start the container
 
 ---
 
-## 🚀 Commands
+## 🛠️ Commands
 
-### 🔹 Initialize project (Docker setup)
+### 🔹 Initialize Docker setup
 
 ```bash
-devstore init docker
+devstore init
 ```
 
-Creates a production-ready `Dockerfile` based on your project.
+Creates a Dockerfile suitable for your project.
 
 ---
 
-### 🔹 Run an application
+### ▶️ Run an application
 
 ```bash
 devstore run <image>
@@ -86,7 +88,7 @@ devstore run my-app
 
 ---
 
-### 🔹 Run with custom port
+### 🔌 Run with custom port mapping
 
 ```bash
 devstore run my-app -p 4000:3000
@@ -94,7 +96,7 @@ devstore run my-app -p 4000:3000
 
 ---
 
-### 🔹 Force rebuild image
+### 🔄 Force rebuild
 
 ```bash
 devstore run my-app --build
@@ -102,13 +104,13 @@ devstore run my-app --build
 
 ---
 
-### 🔹 Build and push to Docker Hub
+### 📤 Build and push image
 
 ```bash
 devstore run username/my-app --build --push
 ```
 
-> ⚠️ Make sure you're logged in:
+> Ensure you are authenticated:
 
 ```bash
 docker login
@@ -116,38 +118,58 @@ docker login
 
 ---
 
-## 🧠 Execution Flow
+### 🛑 Stop a container
 
-DevStore follows a smart execution strategy:
-
+```bash
+devstore stop <image>
 ```
-1. Check if image exists locally
-2. If not → check remote registry (Docker Hub)
-3. If not → build image from Dockerfile
+
+Examples:
+
+```bash
+devstore stop my-app
+devstore stop username/my-app
+```
+
+Stop without removing:
+
+```bash
+devstore stop my-app --only-stop
+```
+
+---
+
+## 🧠 Execution Model
+
+DevStore follows a deterministic execution flow:
+
+1. Check for local image
+2. If not found → check remote registry
+3. If not found → build image
 4. Optionally push image
 5. Run container
-```
 
 ---
 
 ## ⚙️ Options
 
-| Option       | Description                       |
-| ------------ | --------------------------------- |
-| `-p, --port` | Port mapping (default: 3000:3000) |
-| `--build`    | Force rebuild image               |
-| `--push`     | Push image to Docker Hub          |
+| Option      | Description                       |
+| ----------- | --------------------------------- |
+| -p, --port  | Port mapping (default: 3000:3000) |
+| --build     | Force rebuild image               |
+| --push      | Push image to Docker Hub          |
+| --only-stop | Stop container without removing   |
 
 ---
 
 ## 🧪 Example Output
 
 ```bash
-ℹ️  Using local image: my-app
-ℹ️  Cleaning old container: my-app
-ℹ️  Starting container...
-⚠️  Port 3000 busy → switching to 3001
-✅ Running at http://localhost:3001 🚀
+Using local image: my-app
+Port 3000 busy → switching to 3001
+Cleaning old container: my-app
+Starting container...
+Running at http://localhost:3001
 ```
 
 ---
@@ -159,36 +181,15 @@ DevStore follows a smart execution strategy:
 
 ---
 
-## 📁 Project Structure
-
-```
-src/
- ├── commands/        # CLI commands (init, run)
- ├── service/docker/  # Docker logic (build, run, push)
- ├── utils/           # logger, helpers
-```
-
----
-
-## ⚠️ Common Issues & Fixes
+## ⚠️ Common Issues
 
 ### ❌ Port already in use
 
-```bash
-Bind for 0.0.0.0:3000 failed
-```
-
-✅ DevStore auto-fixes this by switching ports.
+DevStore automatically selects the next available port.
 
 ---
 
-### ❌ No Dockerfile found
-
-```bash
-failed to read dockerfile
-```
-
-✅ Run:
+### ❌ Dockerfile not found
 
 ```bash
 devstore init docker
@@ -199,56 +200,26 @@ devstore init docker
 ### ❌ Push failed
 
 ```bash
-docker push error
-```
-
-✅ Fix:
-
-```bash
 docker login
 ```
 
 ---
 
-## 📌 Notes
+## 🎯 Design Principles
 
-* A `Dockerfile` is required for building images
-* DevStore can generate one using `init docker`
-* Image push requires proper naming (`username/image`)
-
----
-
-## 🛠️ Roadmap
-
-* [ ] `devstore logs` (view container logs)
-* [ ] `devstore stop` (stop running container)
-* [ ] Auto-detect frameworks (Next.js, Express)
-* [ ] Deployment support
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome!
-
-1. Fork the repository
-2. Create a feature branch
-3. Submit a pull request
+* Reduce cognitive overhead for Docker workflows
+* Provide deterministic and predictable behavior
+* Minimize required commands
+* Fail gracefully with clear feedback
 
 ---
 
 ## 👨‍💻 Author
 
-**Monu Panwar**
+Monu Panwar
 
 ---
 
 ## 📄 License
 
-MIT License
-
----
-
-## ⭐ Support
-
-If you find this project useful, consider giving it a ⭐ on GitHub!
+MIT

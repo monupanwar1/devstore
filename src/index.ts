@@ -3,6 +3,7 @@
 import { Command } from 'commander';
 import { registerInitCommand } from './command/init-command';
 import { registerRunCommand } from './command/run-command';
+import { registerStopCommand } from './command/stop-command';
 
 const program = new Command();
 
@@ -13,5 +14,6 @@ program
 
 registerInitCommand(program);
 registerRunCommand(program);
+registerStopCommand(program);
 
 program.parse(process.argv);

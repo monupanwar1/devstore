@@ -11,6 +11,7 @@ import {
 import { logger } from '../utils/logger-util';
 import { execSync } from 'child_process';
 
+// 🔥 Check if port is busy
 function isPortBusy(port: number): boolean {
   try {
     execSync(`netstat -ano | findstr :${port}`);
@@ -20,6 +21,7 @@ function isPortBusy(port: number): boolean {
   }
 }
 
+// 🔥 Find available port
 function getAvailablePort(startPort: number): number {
   let port = startPort;
   while (isPortBusy(port)) {
@@ -28,12 +30,25 @@ function getAvailablePort(startPort: number): number {
   return port;
 }
 
-function isDockerLoggedIn(): boolean {
+// ✅ Validate image name (for push)
+function isValidDockerImage(image: string): boolean {
+  return /^[a-z0-9]+[._-]?[a-z0-9]+\/[a-z0-9._-]+$/.test(image);
+}
+
+// ✅ Safe push (NO login check)
+async function safePush(image: string) {
   try {
-    const output = execSync('docker info', { encoding: 'utf-8' });
-    return output.includes('Username');
-  } catch {
-    return false;
+    await pushImage(image);
+    logger.success(`Pushed image: ${image}`);
+  } catch (err: any) {
+    logger.warn('Push failed (are you logged in?)');
+    logger.info('Run: docker login');
+
+    if (err?.shortMessage) {
+      console.error(err.shortMessage);
+    } else if (err instanceof Error) {
+      console.error(err.message);
+    }
   }
 }
 
@@ -66,25 +81,21 @@ export function registerRunCommand(program: Command) {
 
         const finalPort = `${hostPort}:${containerPort}`;
 
-        // 🔥 BUILD / FETCH LOGIC
+        // 🔥 BUILD / FETCH FLOW
+
         if (option.build) {
+          // FORCE BUILD
           logger.info(`Force building image: ${image}`);
           await buildImage(image);
 
-          // 🔥 SAFE PUSH
           if (option.push) {
-            if (!image.includes('/')) {
+            if (!isValidDockerImage(image)) {
               logger.error('Image must be in format username/image for push');
               process.exit(1);
             }
 
-            if (!isDockerLoggedIn()) {
-              logger.warn('Not logged in to Docker. Skipping push.');
-              logger.info('Run: docker login');
-            } else {
-              logger.info(`Pushing image: ${image}`);
-              await pushImage(image);
-            }
+            logger.info(`Pushing image: ${image}`);
+            await safePush(image);
           }
         } else {
           const localExists = await imageExistsLocal(image);
@@ -102,30 +113,25 @@ export function registerRunCommand(program: Command) {
               await buildImage(image);
 
               if (option.push) {
-                if (!image.includes('/')) {
+                if (!isValidDockerImage(image)) {
                   logger.error(
                     'Image must be in format username/image for push',
                   );
                   process.exit(1);
                 }
 
-                if (!isDockerLoggedIn()) {
-                  logger.warn('Not logged in to Docker. Skipping push.');
-                  logger.info('Run: docker login');
-                } else {
-                  logger.info(`Pushing image: ${image}`);
-                  await pushImage(image);
-                }
+                logger.info(`Pushing image: ${image}`);
+                await safePush(image);
               }
             }
           }
         }
 
-        // 🔥 CLEANUP
+        // 🔥 CLEAN OLD CONTAINER
         logger.info(`Cleaning old container: ${containerName}`);
         await removeContainerIfExists(containerName);
 
-        // 🔥 RUN
+        // 🔥 RUN CONTAINER
         logger.info('Starting container...');
         await runContainer(image, {
           port: finalPort,
